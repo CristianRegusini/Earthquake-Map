@@ -2,7 +2,7 @@ import PocketBase from 'pocketbase';
  
 // --- CONFIGURAZIONE POCKETBASE ---
 // La tua macchina
-const pb = new PocketBase('http://10.4.54.30:8090'); // cambia con il tuo indirizzo IP locale
+const pb = new PocketBase('http://192.168.0.170:8090'); // cambia con il tuo indirizzo IP locale
 pb.autoCancellation(false);
  
 // Variabile globale per l'istanza della mappa
