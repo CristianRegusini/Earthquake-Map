@@ -1,4 +1,4 @@
-# EarthquakeMap - Demo Leaflet con Login
+# Earthquake Map - Demo Leaflet con Login
 
 EarthquakeMap è una webapp che mostra in tempo reale i terremoti rilevati dal servizio USGS su una mappa interattiva, con autenticazione utente tramite PocketBase. L'interfaccia è moderna, responsive e utilizza Leaflet, DaisyUI, Bootstrap Icons e Tailwind CSS.
 
