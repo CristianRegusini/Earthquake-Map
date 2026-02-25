@@ -1,89 +1,109 @@
-# 🌍 Earthquake Map & Seismic Monitor
+# 🌍 EarthquakeMap — Seismic Monitor
 
-Benvenuti in **Earthquake Map**, una piattaforma interattiva per il monitoraggio in tempo reale dei terremoti globali. Il progetto visualizza i dati sismici forniti dall'API **USGS**, integrandoli con un backend **PocketBase** per la persistenza dei dati e l'autenticazione.
+> ⚡ **Questa applicazione è stata interamente generata con un singolo prompt all'intelligenza artificiale.**
+> Abbiamo descritto ciò che volevamo e l'AI ha prodotto l'intera codebase — componenti, servizi, stili e configurazione — senza alcun intervento manuale sul codice.
 
-Il repository è strutturato in due versioni distinte, ospitate su branch differenti, per esplorare diversi approcci allo sviluppo web:
-
----
-
-## 🛠️ Scegli la tua versione
-
-Il progetto è stato sviluppato con due tecnologie diverse. Scegli la branch più adatta alle tue esigenze:
-
-| Versione | Tecnologia | Caratteristiche Principali | Link alla Branch |
-| --- | --- | --- | --- |
-| **Vanilla JS** | `.js` + Leaflet | Leggera, imperativa, ideale per capire l'integrazione diretta di Leaflet. | [🔗 JavaScript-Earthquake-Map-con-Login](https://github.com/CristianRegusini/Earthquake-Map/blob/JavaScript-Earthquake-map/README.md) |
-| **React UI** | `.jsx` + React 19 | Componenti moderni, Context API, interamente generata tramite AI. | [🔗 One-Prompt_Earthquake-Map](https://github.com/CristianRegusini/Earthquake-Map/blob/One-Prompt-Earthquake-Map/README.md) |
+Applicazione React per la visualizzazione in tempo reale dei terremoti globali,
+alimentata dall'API USGS e integrata con PocketBase come backend.
 
 ---
 
-## ✨ Funzionalità Comuni
-
-Indipendentemente dalla versione scelta, l'applicazione offre:
-
-* **Mappa Interattiva**: Visualizzazione tramite Leaflet con cerchi dinamici (colore e raggio) basati sulla magnitudo.
-* **Dati Real-time**: Fetch automatico degli ultimi eventi sismici dall'API USGS.
-* **Sincronizzazione Backend**: Salvataggio e aggiornamento automatico dei terremoti su database PocketBase.
-* **Filtri Avanzati**: Filtraggio per magnitudo e ricerca testuale per luogo.
-* **UI Responsive**: Interfaccia moderna basata su **Tailwind CSS** e **DaisyUI**.
-* **Multi-Layer**: Switch tra mappe satellitari, geografiche e dark mode.
-
----
-
-## 🗄️ Setup del Backend (PocketBase)
-
-Entrambe le versioni richiedono un'istanza di **PocketBase** attiva.
-
-1. Scarica ed esegui PocketBase: [pocketbase.io](https://pocketbase.io/docs/).
-2. Avvia il server: `./pocketbase serve`.
-3. **Schema Database**: Crea una collezione (chiamata `terremoti` o `earthquakes` a seconda della branch) con i seguenti campi:
-
-| Campo | Tipo | Descrizione |
-| --- | --- | --- |
-| `usgs_id` | Text (Unique) | ID univoco del terremoto |
-| `magnitudo` | Number | Intensità sismica |
-| `luogo` | Text | Descrizione geografica |
-| `latitudine` | Number/Text | Coordinata decimale |
-| `longitudine` | Number/Text | Coordinata decimale |
-| `DateTime` | Date/ISO | Data e ora dell'evento |
-
-> **Tip:** Puoi importare il file `pb_schema.json` (se presente nella branch) direttamente nel pannello admin di PocketBase per configurare tutto in un click.
-
----
-
-## 🚀 Avvio Rapido (Locale)
-
-Una volta scelta la branch e configurato PocketBase:
+## 🚀 Avvio rapido
 
 ```bash
-# Installa le dipendenze
+# 1. Installa le dipendenze
 npm install
 
-# Configura l'endpoint PocketBase (es. in src/main.js o .env)
-# URL predefinito: http://localhost:8090
+# 2. Configura le variabili d'ambiente
+cp .env.example .env
+# Modifica .env con l'URL del tuo server PocketBase
 
-# Avvia il server di sviluppo
+# 3. Avvia il server di sviluppo
 npm run dev
-
 ```
 
-L'app sarà disponibile su `http://localhost:5173`.
+Apri [http://localhost:5173](http://localhost:5173) nel browser.
 
 ---
 
-## 🧪 Stack Tecnologico
+## 🗂️ Struttura del progetto
 
-* **Frontend**: [Vite](https://vitejs.dev/) + [Leaflet](https://leafletjs.com/)
-* **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [DaisyUI](https://daisyui.com/)
-* **Backend as a Service**: [PocketBase](https://pocketbase.io/)
-* **Data Source**: [USGS Earthquake Catalog](https://www.google.com/search?q=https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php)
+```
+src/
+├── context/
+│   └── EarthquakeContext.jsx   # State globale (useState + useContext)
+├── components/
+│   ├── Map.jsx                 # Mappa Leaflet con marker sismici
+│   ├── LayerSelector.jsx       # Dropdown selezione tile layer
+│   ├── EarthquakeList.jsx      # Lista terremoti con click&show
+│   ├── Legend.jsx              # Legenda magnitudo a colori
+│   └── MagnitudeFilter.jsx     # Filtro range con slider + +/-
+├── services/
+│   └── pocketbaseService.js    # CRUD verso PocketBase REST API
+├── utils/
+│   └── earthquakeUtils.js      # Funzioni di normalizzazione e utilità
+├── App.jsx                     # Layout principale
+├── main.jsx                    # Entry point React
+└── index.css                   # Stile globale + override Leaflet/DaisyUI
+```
 
 ---
 
-## 🤖 Nota sulla Versione React
+## 🗄️ Schema PocketBase
 
-La versione presente nella branch **React** si distingue per essere stata generata interamente tramite **intelligenza artificiale** con un singolo prompt, dimostrando le capacità attuali di automazione nella creazione di architetture software complesse (Context, Services, Hooks).
+Crea una collezione `earthquakes` con i seguenti campi:
+
+| Campo        | Tipo        | Note                             |
+|--------------|-------------|----------------------------------|
+| `id`         | PK auto     | Generato da PocketBase           |
+| `magnitudo`  | Number      | Es. 6.1                          |
+| `Data&Ora`   | Datetime    | ISO 8601                         |
+| `latitudine` | Plain Text  | Coordinata decimale (es. "37.5") |
+| `longitudine`| Plain Text  | Coordinata decimale              |
+| `luogo`      | Plain Text  | Descrizione luogo USGS           |
+| `usgs_id`    | Plain Text  | ID univoco USGS (indexed)        |
+
+> ⚠️ Il campo `usgs_id` dovrebbe essere **unico** per evitare duplicati durante la sync.
 
 ---
 
-> **Vuoi approfondire il codice?** Scegli una delle branch sopra per leggere i dettagli tecnici specifici di implementazione!
+## ✨ Funzionalità
+
+| Feature                | Descrizione                                                      |
+|------------------------|------------------------------------------------------------------|
+| **API USGS**           | Fetch automatica al mount, ultimi 7 giorni, tutte le magnitudo  |
+| **Mappa interattiva**  | Leaflet con 4 layer (geografica, satellitare, dark, topografica) |
+| **Click & Show**       | Click dalla lista → fly-to + popup sulla mappa                  |
+| **Legenda**            | Dropdown con classificazione cromatica della magnitudo           |
+| **Filtro magnitudo**   | Dropdown Top + dual slider + pulsanti ±0.5                      |
+| **Sync PocketBase**    | Salvataggio in background di tutti gli eventi USGS              |
+
+---
+
+## 🛠️ Stack tecnico
+
+- **React 19** — componenti funzionali, hooks moderni
+- **Leaflet 1.9** — mappa interattiva (caricata via npm)
+- **Tailwind CSS 3** + **DaisyUI 4** — UI moderna e responsive
+- **Vite 6** — bundler e dev server
+- **PocketBase** — backend REST (nessun SDK, solo `fetch`)
+
+---
+
+## 🎨 Design
+
+Tema **Seismic Monitor** — ispirato alle console di monitoraggio sismico:
+
+- Sfondo: navy scuro `#080c18`
+- Accenti: ambra `#f59e0b` (energia sismica)
+- Marker: verde/ambra/rosso in base alla magnitudo
+- Font: Orbitron (display) + IBM Plex Mono (dati) + Exo 2 (UI)
+
+---
+
+## 🤖 Generato con AI — One Prompt
+
+L'intera applicazione è nata da **un solo prompt**. Nessuna iterazione, nessuna correzione manuale: abbiamo descritto il progetto all'intelligenza artificiale e lei ha generato tutto — architettura, componenti React, integrazione API, stili e configurazione — in una singola risposta.
+
+> *Un esempio concreto di come l'AI generativa stia cambiando il modo di costruire software.*
+
