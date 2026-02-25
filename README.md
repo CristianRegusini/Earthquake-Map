@@ -13,7 +13,7 @@ Il progetto è stato sviluppato con due tecnologie diverse. Scegli la branch pi�
 | Versione | Tecnologia | Caratteristiche Principali | Link alla Branch |
 | --- | --- | --- | --- |
 | **Vanilla JS** | `.js` + Leaflet | Leggera, imperativa, ideale per capire l'integrazione diretta di Leaflet. | [🔗 JavaScript-Earthquake-Map-con-Login](https://github.com/CristianRegusini/Earthquake-Map/blob/JavaScript-Earthquake-map/README.md) |
-| **React UI** | `.jsx` + React 19 | Componenti moderni, Context API, interamente generata tramite AI. | [🔗 One-Prompt_Earthquake-Map]() |
+| **React UI** | `.jsx` + React 19 | Componenti moderni, Context API, interamente generata tramite AI. | [🔗 One-Prompt_Earthquake-Map](https://github.com/CristianRegusini/Earthquake-Map/blob/One-Prompt-Earthquake-Map/README.md) |
 
 ---
 
