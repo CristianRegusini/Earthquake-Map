@@ -52,7 +52,7 @@ export default function EarthquakeList() {
       {/* ── Dropdown panel ── */}
       {open && (
         <div
-          className="absolute top-full left-0 mt-1 rounded-box shadow-2xl z-[1000]"
+          className="absolute bottom-full left-0 mt-1 rounded-box shadow-2xl z-[1000]"
           style={{
             width:      '320px',
             maxHeight:  '440px',
