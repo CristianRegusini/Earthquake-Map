@@ -1,79 +1,96 @@
-/**
- * pocketbaseService.js
- * Servizio per l'integrazione con PocketBase.
- * Usa l'API REST nativa di PocketBase senza SDK esterno.
- *
- * Campi della collezione "earthquakes":
- *   id (PK), magnitudo (Number), Data&Ora (Datetime),
- *   latitudine (Text), longitudine (Text), luogo (Text), usgs_id (Text)
- */
+import PocketBase from 'pocketbase';
 
-// ─── Configurazione ──────────────────────────────────────────
-// Imposta l'URL del tuo server PocketBase qui o in .env
-const PB_URL = import.meta.env.VITE_POCKETBASE_URL || 'http://localhost:8090';
+const pb = new PocketBase('http://localhost:8090');
+pb.autoCancellation(false);
+
 const COLLECTION = 'earthquakes';
-
-/** Endpoint base della collezione */
-const endpoint = (path = '') =>
-  `${PB_URL}/api/collections/${COLLECTION}/records${path}`;
 
 /**
  * Recupera tutti i record dalla collezione PocketBase.
  * @returns {Promise<Object[]>}
  */
 export async function fetchFromPocketBase() {
-  const res = await fetch(`${endpoint()}?perPage=500&sort=-Data&Ora`);
-  if (!res.ok) throw new Error(`PocketBase fetch error: ${res.status}`);
-  const data = await res.json();
-  return data.items || [];
+  const records = await pb.collection(COLLECTION).getFullList({
+    sort: '-DataandOra', /**ordina i terremoti per data decrescente */
+    batch: 500 /**recupera fino a 500 record in un'unica chiamata, per performance */
+  });
+  return records;
 }
 
 /**
  * Salva un nuovo terremoto normalizzato in PocketBase.
  * @param {Object} earthquake - Record normalizzato da normalizeUSGSFeature()
- * @returns {Promise<Object>} - Record creato
+ * @returns {Promise<Object|null>} - Record creato oppure null se già esistente
  */
 export async function saveToPocketBase(earthquake) {
-  // Mappa i campi del formato interno ai campi della collezione PocketBase
+  // 1. Controlla se il record esiste già tramite usgs_id
+  try {
+    await pb.collection(COLLECTION).getFirstListItem(`usgs_id="${earthquake.usgs_id}"`);
+    return null; // già presente, skip silenzioso
+  } catch {
+    // non esiste, procedi con l'inserimento
+  }
+
+  // 2. Converti la data nel formato accettato da PocketBase: "YYYY-MM-DD HH:mm:ss.sssZ"
+  let isoDate = '';
+  if (earthquake.dataOra) {
+    const d = new Date(
+      typeof earthquake.dataOra === 'string'
+        ? earthquake.dataOra.replace(' UTC', 'Z').replace(' ', 'T')
+        : earthquake.dataOra
+    );
+    if (!isNaN(d.getTime())) {
+      isoDate = d.toISOString().replace('T', ' ');
+    }
+  }
+
   const body = {
-    magnitudo:  earthquake.magnitudo,
-    'Data&Ora': earthquake.dataOra,    // campo con nome speciale
-    latitudine: earthquake.latitudine,
-    longitudine: earthquake.longitudine,
-    luogo:      earthquake.luogo,
-    usgs_id:    earthquake.usgs_id,
+    magnitudo:  Number(earthquake.magnitudo),
+    DataandOra: isoDate,
+    latitudine: String(earthquake.latitudine),
+    longitudine: String(earthquake.longitudine),
+    luogo:      String(earthquake.luogo),
+    usgs_id:    String(earthquake.usgs_id),
   };
 
-  const res = await fetch(endpoint(), {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    // 400 con codice di validità univoca = record già esistente
-    if (res.status === 400 && err?.data?.usgs_id) return null;
-    throw new Error(`PocketBase save error: ${res.status}`);
+  // 3. Validazione campi obbligatori
+  for (const [k, v] of Object.entries(body)) {
+    if (v === undefined || v === null || v === '' || (k === 'magnitudo' && isNaN(v))) {
+      console.error(`Campo mancante o non valido: ${k}`, body);
+      throw new Error(`Campo mancante o non valido: ${k}`);
+    }
   }
-  return res.json();
+
+  // 4. Inserimento
+  try {
+    const record = await pb.collection(COLLECTION).create(body);
+    return record;
+  } catch (err) {
+    console.error('PocketBase save error:', JSON.stringify(err?.data?.data, null, 2));
+    console.error('Body inviato:', JSON.stringify(body, null, 2));
+    throw err;
+  }
 }
 
 /**
  * Sincronizza un array di terremoti USGS normalizzati con PocketBase.
  * Inserisce solo i record non ancora presenti (basandosi su usgs_id).
  * @param {Object[]} earthquakes
- * @returns {Promise<{saved: number, skipped: number}>}
+ * @returns {Promise<{saved: number, skipped: number, errors: number}>}
  */
 export async function syncEarthquakes(earthquakes) {
-  let saved = 0, skipped = 0;
+  let saved = 0, skipped = 0, errors = 0;
+
   for (const eq of earthquakes) {
     try {
       const result = await saveToPocketBase(eq);
       result ? saved++ : skipped++;
-    } catch {
-      skipped++;
+    } catch (err) {
+      console.error('Errore su:', eq?.usgs_id, err?.message);
+      errors++;
     }
   }
-  return { saved, skipped };
+
+  console.log(`Sync completato → salvati: ${saved}, già presenti: ${skipped}, errori: ${errors}`);
+  return { saved, skipped, errors };
 }
