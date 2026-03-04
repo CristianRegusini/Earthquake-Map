@@ -75,7 +75,7 @@ export default function Legend() {
       {/* ── Dropdown panel ── */}
       {open && (
         <div
-          className="absolute top-full right-0 mt-1 rounded-box shadow-2xl z-[1000] p-3"
+          className="absolute bottom-full right-0 mt-1 rounded-box shadow-2xl z-[1000] p-3"
           style={{
             width:      '260px',
             background: 'rgba(13,18,36,0.98)',
