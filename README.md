@@ -94,3 +94,6 @@ Tema **Seismic Monitor** — ispirato alle console di monitoraggio sismico:
 - Accenti: ambra `#f59e0b` (energia sismica)
 - Marker: verde/ambra/rosso in base alla magnitudo
 - Font: Orbitron (display) + IBM Plex Mono (dati) + Exo 2 (UI)
+---
+
+## 🤖 Struttura One Prompt utilizzata
